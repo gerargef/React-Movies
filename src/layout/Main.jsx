@@ -20,11 +20,13 @@ export class Main extends Component {
     this.setState({ isLoading: true });
     fetch(url)
       .then((response) => response.json())
-      .then((data) => this.setState({ films: data.Search, isLoading: false, totalResult: data.totalResults }));
+      .then((data) => this.setState({ films: data.Search, isLoading: false, totalResult: data.totalResults })
+      .catch((err) =>
+      console.error(err)));
   };
   searchMovies = (desiredValue, type, page) => {
       this.fetchingMovies(
-        `http://www.omdbapi.com/?apikey=${API_KEY}&s=${desiredValue}&type=${type}&page=${page}`
+        `https://www.omdbapi.com/?apikey=${API_KEY}&s=${desiredValue}&type=${type}&page=${page}`
       );
   };
   componentDidMount = () => {
