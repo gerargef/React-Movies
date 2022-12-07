@@ -1,62 +1,65 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import Searcher from "../components/Searcher";
 import MovieList from "../components/MovieList";
 import Paginator from "../components/Paginator";
+import Preloader from "../components/Preloader";
 import FilterRadioButton from "../components/FilterRadioButton";
+import { useEffect } from "react";
 const API_KEY = process.env.REACT_APP_API_KEY;
-export class Main extends Component {
-  constructor() {
-    super();
-    this.state = {
-      films: [],
-      currentMovies: "Evangelion",
-      isLoading: true,
-      totalResult: '',
-      currentPage: 1,
-      type: '',
-    };
-  }
-  fetchingMovies = (url) => {
-    this.setState({ isLoading: true });
+
+function Main() {
+  const [films, setFilms] = useState([]);
+  const [currentMovies, setCurrentMovies] = useState("Evangelion");
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResult, setTotalResult] = useState(0);
+  const [type, setType] = useState("");
+
+  const fetchingMovies = (url) => {
+    setIsLoading(true);
     fetch(url)
       .then((response) => response.json())
-      .then((data) => this.setState({ films: data.Search, isLoading: false, totalResult: data.totalResults })
-      .catch((err) =>
-      console.error(err)));
+      .then((data) => {
+        setFilms(data.Search);
+        setIsLoading(false);
+        setTotalResult(data.totalResults);
+      })
+      .catch((err) => console.error(err));
   };
-  searchMovies = (desiredValue, type, page) => {
-      this.fetchingMovies(
-        `https://www.omdbapi.com/?apikey=${API_KEY}&s=${desiredValue}&type=${type}&page=${page}`
-      );
-  };
-  componentDidMount = () => {
-    this.searchMovies(this.state.currentMovies, this.state.type, this.state.currentPage)
-  };
-  getType = (type) => {
-    this.setState({type: type, currentPage: 1}, () => {
-      this.searchMovies(this.state.currentMovies, this.state.type, this.state.currentPage)
-    })
-  }
-  getSearchValue = (search) => {
-    this.setState({currentMovies: search, currentPage: 1}, () => {
-      this.searchMovies(this.state.currentMovies, this.state.type, this.state.currentPage)
-    })
-  }
-  getPage = (page) => {
-    this.setState({currentPage: page}, () => {
-      this.searchMovies(this.state.currentMovies, this.state.type, this.state.currentPage)
-    })
-  }
-  render() {
-    return (
-      <main className="container content">
-        <Searcher getSearchValue={this.getSearchValue} />
-        <FilterRadioButton getType={this.getType} />
-        <MovieList films={this.state.films} />
-        <Paginator pages={Math.ceil(this.state.totalResult/10)} currentPage={this.state.currentPage} getPage={this.getPage}/>
-      </main>
+
+  const searchMovies = (desiredValue, type, page) => {
+    fetchingMovies(
+      `https://www.omdbapi.com/?apikey=${API_KEY}&s=${desiredValue}&type=${type}&page=${page}`
     );
-  }
+  };
+
+  const getType = (type) => {
+    setType(type);
+    setCurrentPage(1);
+  };
+  const getSearchValue = (search) => {
+    setCurrentMovies(search);
+    setCurrentPage(1);
+  };
+  const getPage = (page) => {
+    setCurrentPage(page);
+  };
+
+  useEffect(() => {
+    searchMovies(currentMovies, type, currentPage);
+  }, [currentMovies, currentPage, type]);
+  return (
+    <main className="container content">
+      <Searcher getSearchValue={getSearchValue} />
+      <FilterRadioButton getType={getType} />
+      {isLoading ? <Preloader /> : <MovieList films={films} />}
+      <Paginator
+        pages={Math.ceil(totalResult / 10)}
+        currentPage={currentPage}
+        getPage={getPage}
+      />
+    </main>
+  );
 }
 
 export default Main;

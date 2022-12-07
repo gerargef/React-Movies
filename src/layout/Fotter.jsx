@@ -2,7 +2,7 @@ import React from 'react'
 
 function Fotter() {
   return (
-    <footer className="page-footer purple darken-4">
+    <footer className="page-footer purple darken-4 footer">
     <div className="footer-copyright">
       <div className="container">
       © 2022 Copyright Text
